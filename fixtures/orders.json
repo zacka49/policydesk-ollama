@@ -1,0 +1,11 @@
+[
+  {"order_id":"NS-1001","customer_id":"C-001","status":"delivered","order_value_gbp":45.00,"delivery_date":"2026-09-10","promised_date":"2026-09-10"},
+  {"order_id":"NS-1002","customer_id":"C-001","status":"delivered","order_value_gbp":145.00,"delivery_date":"2026-09-12","promised_date":"2026-09-12"},
+  {"order_id":"NS-1003","customer_id":"C-002","status":"delivered","order_value_gbp":24.00,"delivery_date":"2026-08-24","promised_date":"2026-08-24"},
+  {"order_id":"NS-1004","customer_id":"C-002","status":"in_transit","order_value_gbp":68.00,"delivery_date":null,"promised_date":"2026-09-22"},
+  {"order_id":"NS-1005","customer_id":"C-003","status":"processing","order_value_gbp":19.00,"delivery_date":null,"promised_date":"2026-09-30"},
+  {"order_id":"NS-1006","customer_id":"C-003","status":"cancelled","order_value_gbp":55.00,"delivery_date":null,"promised_date":"2026-09-20"},
+  {"order_id":"NS-1007","customer_id":"C-004","status":"delivered","order_value_gbp":100.00,"delivery_date":"2026-08-25","promised_date":"2026-08-25"},
+  {"order_id":"NS-1008","customer_id":"C-004","status":"delivered","order_value_gbp":12.00,"delivery_date":"2026-09-24","promised_date":"2026-09-24"}
+]
+

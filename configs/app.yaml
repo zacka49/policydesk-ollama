@@ -1,0 +1,13 @@
+policy_version: "1.0"
+clock: "2026-09-24"
+returns:
+  standard_window_days: 30
+  max_order_value_for_draft_gbp: 100
+generation:
+  model: "llama3.2"
+  temperature: 0
+  timeout_seconds: 45
+  max_schema_retries: 1
+retrieval:
+  top_k: 4
+
