@@ -1,30 +1,47 @@
-# Controlled Azure deployment
+# Zero-cost cloud and release evidence
 
-The repository contains an unexecuted deployment path for Azure Container Apps. It uses GitHub OIDC, Azure Container Registry, a managed identity with `AcrPull`, Log Analytics, immutable commit-tagged images, multiple revisions and scale-to-zero.
+PolicyDesk follows a strict **£0 external-services policy**. It does not provision Azure,
+hosted inference, a paid registry, a database or any other metered cloud resource.
 
-No deployment result is claimed until the workflow has run, the endpoint has been tested, and the resulting revision/run links are recorded.
+## Evidence that runs for free
 
-## Before the first run
+The public repository uses standard GitHub-hosted Linux runners. GitHub documents that
+standard Actions usage is free for public repositories. The workflows retain no build
+artifacts or container images:
 
-1. Use the [cost worksheet](cost-worksheet.md) to check live prices, quotas and log retention for the selected subscription and region.
-2. Create an Entra application or user-assigned identity with a federated credential restricted to this repository and the `azure-demo` GitHub environment. Grant only the resource-group permissions required by the templates and ACR build.
-3. Configure the `azure-demo` environment with required reviewers. Add `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, and `AZURE_RESOURCE_GROUP` as environment variables.
-4. Replace the fixture-token boundary with validated identity-provider claims before connecting real data. This deployment contains synthetic data only.
-5. Run **Deploy controlled Azure demo** manually. Manual dispatch and environment review are intentional cost controls.
+1. CI installs the project, runs Ruff and pytest, executes the frozen evaluation, compiles
+   both Azure Bicep templates and builds the Docker image.
+2. `Zero-cost deployment evidence` builds an immutable commit-tagged image, starts it in
+   an ephemeral local container, and tests liveness, readiness, an authorised decision and
+   cross-customer denial over a real HTTP socket.
+3. The job summary records the commit and checks. The container and runner disappear at
+   job completion.
 
-## Release and rollback
+This demonstrates packaging, automated release gates, health checks and access-boundary
+smoke testing. It is not evidence of public hosting, production uptime, traffic, Azure
+operations or customer use.
 
-The workflow tests the commit, runs the deterministic release evaluation, builds in ACR, and deploys a candidate revision. Record its workflow URL, commit, revision, evaluation artifact and observed cost in a release evidence document.
+## Azure reference design
 
-For a rollback drill, list revisions and move all traffic to the last known compatible revision. Verify that its corpus, rules and schema remain compatible; an image rollback alone does not restore external state.
+The repository retains Bicep for Container Apps, Azure Container Registry, managed
+identity and Log Analytics. CI compiles it so syntax and module wiring cannot silently
+rot. The former deployment workflow is retained as
+[`docs/reference/deploy-azure.example.yml`](reference/deploy-azure.example.yml), outside
+`.github/workflows`, so it cannot provision anything.
 
-```powershell
-az containerapp revision list --resource-group <group> --name <prefix>-api --output table
-az containerapp ingress traffic set --resource-group <group> --name <prefix>-api --revision-weight <known-good>=100
-```
+The reference design shows OIDC authentication, least-scope resource-group deployment,
+immutable image tags, managed registry pull identity, revision capture and endpoint smoke
+tests. The matching release record is under
+[`docs/reference/azure-release-evidence-template.md`](reference/azure-release-evidence-template.md).
+Both files are design evidence only.
 
-Label deliberately injected failures as drills. Do not describe synthetic traffic as customer traffic or infer an availability SLA from a short run.
+## Why Azure is deliberately not run
 
-## Teardown
+Azure Cost Management budgets notify; they do not stop resource consumption. A free grant
+or trial can also vary by account, region and previous usage. That cannot satisfy a strict
+zero-spend requirement, so the portfolio makes no Azure deployment claim and requires no
+Azure sign-in.
 
-The templates are designed for a dedicated resource group. After preserving the deployment evidence, delete the explicitly named demo group through Azure Portal or the CLI and verify that billing resources are gone. Never substitute a shared resource group in the deletion command.
+If an employer supplies a sandbox subscription later, the reference design can be
+reviewed and adapted under that organisation's controls. That is outside this portfolio's
+£0 evidence boundary.

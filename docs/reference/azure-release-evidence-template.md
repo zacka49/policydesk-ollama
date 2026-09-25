@@ -1,4 +1,7 @@
-# Controlled Azure release evidence
+# Reference Azure release evidence
+
+This template is retained for design review only. The portfolio's zero-spend policy does
+not permit an Azure deployment, so no field below is presented as observed evidence.
 
 Complete this record from the workflow and Azure resource outputs. Do not fill unknown fields with estimates.
 

@@ -1,4 +1,7 @@
-name: Deploy controlled Azure demo
+# NON-EXECUTABLE REFERENCE: this file is intentionally outside .github/workflows.
+# It describes a possible employer-funded deployment and must not be copied or run under
+# this portfolio's zero-spend policy.
+name: Reference only - deploy controlled Azure demo
 
 on:
   workflow_dispatch:

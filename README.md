@@ -11,7 +11,7 @@ For a concise interview demonstration, follow the [three-minute walkthrough](doc
 | Implemented | Trusted rule decisions, BM25 retrieval, server-derived demo identity, scope/ownership checks, deterministic fallback and optional local generation |
 | Tested | 15 automated boundary/API/retrieval/MCP tests, including client-supplied identity rejection, cross-customer access and two independent MCP clients |
 | Measured | [22-case deterministic baseline](reports/evaluation-v2.md): 100% decision/status accuracy, 100% document recall@4, 0.808 MRR@4; [local HTTP workload](reports/local-http-benchmark.md): 250/250 successful |
-| Deployed | Not yet. Azure infrastructure and release workflow are being prepared; no cloud result is claimed. |
+| Deployed | No public cloud resources. The zero-spend release workflow builds and smoke-tests the container on an ephemeral GitHub-hosted runner; Azure remains an unexecuted reference design. |
 
 It works without Ollama using a deterministic fallback. When Ollama is serving at `http://127.0.0.1:11434`, PolicyDesk uses the configured local model to select a valid supporting-evidence subset. Consequential decision language remains a trusted template; generated prose cannot turn an eligibility review into an approval, promise a refund, or otherwise rewrite the Python decision.
 
@@ -69,7 +69,10 @@ See the [product brief](docs/product-brief.md), [threat model](docs/threat-model
 
 The evaluation command also supports `--retrieval dense` and `--retrieval hybrid`. These modes use the configured Ollama embedding model and must be measured before making a quality claim. The hybrid implementation fuses BM25 and dense ranks with reciprocal rank fusion; the checked-in headline remains the reproducible BM25 baseline.
 
-The Azure path is documented in [controlled deployment](docs/azure-deployment.md) and the [cost worksheet](docs/cost-worksheet.md). Infrastructure code is checked in, but no Azure deployment is claimed yet.
+The delivery path is documented in [zero-cost cloud evidence](docs/azure-deployment.md)
+and the [zero-spend policy](docs/cost-worksheet.md). Public-repository GitHub Actions
+compiles the Azure Bicep reference design and exercises the production container without
+creating billable cloud resources. No Azure deployment is claimed.
 
 An optional [MCP stdio server](docs/mcp.md) exposes policy search, scoped order lookup and idempotent simulated draft creation using the official SDK. Its integration test performs real protocol initialisation, discovery and calls through two independent client sessions. This is local MCP interoperability evidence, not remote OAuth evidence.
 

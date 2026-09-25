@@ -1,0 +1,61 @@
+name: Zero-cost deployment evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/zero-cost-evidence.yml"
+      - "Dockerfile"
+      - "pyproject.toml"
+      - "src/**"
+      - "configs/**"
+      - "fixtures/**"
+      - "policies/**"
+
+permissions:
+  contents: read
+
+jobs:
+  local-container-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build immutable candidate image
+        run: docker build --tag "policydesk:${GITHUB_SHA}" .
+      - name: Start candidate
+        run: >-
+          docker run --detach --name policydesk-candidate
+          --publish 127.0.0.1:8000:8000
+          --env POLICYDESK_OFFLINE=1
+          "policydesk:${GITHUB_SHA}"
+      - name: Exercise health, decision and access boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          trap 'docker logs policydesk-candidate' ERR
+          base="http://127.0.0.1:8000"
+          curl --fail --retry 10 --retry-all-errors --retry-delay 1 "$base/health/live" | jq -e '.status == "ok"'
+          curl --fail "$base/health/ready" | jq -e '.status == "ready" and .retrieval_index_loaded == true'
+          curl --fail \
+            --header 'Authorization: Bearer pd-demo-alice' \
+            --header 'Content-Type: application/json' \
+            --data '{"ticket":"I want to return this order","order_id":"NS-1001"}' \
+            "$base/assist" | jq -e '.decision == "eligible_for_review" and .policy_version'
+          curl --fail \
+            --header 'Authorization: Bearer pd-demo-bob' \
+            --header 'Content-Type: application/json' \
+            --data '{"ticket":"I want to return this order","order_id":"NS-1001"}' \
+            "$base/assist" | jq -e '.decision == "unauthorised_order" and .status == "escalate"'
+      - name: Record evidence summary
+        shell: bash
+        run: |
+          echo "### Zero-cost container release evidence" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: \`${GITHUB_SHA}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Runtime: temporary Docker container on a standard public-repository GitHub-hosted runner." >> "$GITHUB_STEP_SUMMARY"
+          echo "- Checks: liveness, readiness, authorised decision path and cross-customer denial." >> "$GITHUB_STEP_SUMMARY"
+          echo "- External cloud resources, hosted inference, paid runners and retained artifacts: none." >> "$GITHUB_STEP_SUMMARY"
+          echo "- This is release-process evidence; it is not a production uptime or public-deployment claim." >> "$GITHUB_STEP_SUMMARY"
+      - name: Stop candidate
+        if: always()
+        run: docker rm --force policydesk-candidate

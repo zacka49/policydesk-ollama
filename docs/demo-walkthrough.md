@@ -23,7 +23,10 @@ uv run policydesk serve
 
 **1:50–2:25 — Show measured evidence.** Open `reports/evaluation-v2.md`: 22/22 decisions, 20/20 expected document hits and 0.808 MRR@4. Open `reports/local-http-benchmark.md`: 250/250 real-socket responses. State that the workload is local and synthetic.
 
-**2:25–3:00 — Show delivery judgment.** Open `docs/azure-deployment.md`, the Bicep templates and the manual OIDC workflow. Explain that these are deployment-ready artifacts and that no Azure result is claimed until the workflow, alert and rollback drill have actually run.
+**2:25–3:00 — Show delivery judgment.** Open `docs/azure-deployment.md`, the zero-cost
+workflow and the Bicep templates. Explain that CI compiles the Azure design while the
+release-evidence workflow exercises the real container without provisioning resources.
+State clearly that this proves release mechanics, not Azure operations or public uptime.
 
 ## Interview prompts this supports
 
