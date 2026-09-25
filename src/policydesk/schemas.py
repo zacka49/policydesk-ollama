@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Citation(BaseModel):
@@ -23,6 +23,15 @@ class AssistRequest(BaseModel):
     order_id: str | None = Field(default=None, max_length=100)
 
 
+class ApiAssistRequest(BaseModel):
+    """Public request body. Customer identity comes from authentication."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    ticket: str = Field(min_length=3, max_length=3000)
+    order_id: str | None = Field(default=None, max_length=100)
+
+
 class AssistResponse(DraftResponse):
     request_id: str
     decision: str
@@ -30,4 +39,3 @@ class AssistResponse(DraftResponse):
     policy_version: str
     generation_mode: Literal["ollama", "deterministic_fallback"]
     latency_ms: float
-

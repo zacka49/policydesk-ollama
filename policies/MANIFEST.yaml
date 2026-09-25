@@ -1,0 +1,18 @@
+corpus_id: northstar-authored-demo
+corpus_version: "1.0"
+effective_date: 2026-09-24
+provenance: Authored synthetic policies created for this public portfolio demonstration.
+license: Repository license applies.
+audience: northstar-demo support agents
+documents:
+  - cancellations
+  - damaged-items
+  - delivery
+  - exchanges
+  - payments
+  - product-care
+  - returns
+  - subscriptions
+limitations:
+  - The corpus is not derived from real customer or employer material.
+  - Synthetic retrieval performance does not establish production support quality.

@@ -21,6 +21,7 @@ class GenerationConfig(BaseModel):
 
 class RetrievalConfig(BaseModel):
     top_k: int = Field(ge=1, le=20)
+    embedding_model: str = "nomic-embed-text"
 
 
 class AppConfig(BaseModel):
@@ -33,4 +34,3 @@ class AppConfig(BaseModel):
 
 def load_config(path: Path) -> AppConfig:
     return AppConfig.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
-

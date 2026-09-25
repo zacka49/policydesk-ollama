@@ -1,0 +1,87 @@
+name: Deploy controlled Azure demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      location:
+        description: Azure region checked against the cost worksheet
+        required: true
+        default: uksouth
+      name_prefix:
+        description: Globally unique lowercase resource prefix
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: policydesk-azure-demo
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment: azure-demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --extra dev --extra mcp
+      - run: uv run ruff check src tests
+      - run: uv run pytest -q
+      - run: uv run policydesk evaluate --offline --output outputs/release-evaluation.json
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Create resource group
+        run: >-
+          az group create
+          --name "${{ vars.AZURE_RESOURCE_GROUP }}"
+          --location "${{ inputs.location }}"
+      - name: Deploy foundation
+        id: foundation
+        shell: bash
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --template-file infra/foundation.bicep \
+            --parameters location="${{ inputs.location }}" namePrefix="${{ inputs.name_prefix }}" \
+            --query properties.outputs -o json)
+          echo "registry=$(jq -r '.registryName.value' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+          echo "login_server=$(jq -r '.registryLoginServer.value' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+          echo "environment_id=$(jq -r '.environmentId.value' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+          echo "identity_id=$(jq -r '.pullIdentityId.value' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+      - name: Build immutable image in ACR
+        run: >-
+          az acr build
+          --registry "${{ steps.foundation.outputs.registry }}"
+          --image "policydesk:${{ github.sha }}"
+          .
+      - name: Deploy candidate revision
+        id: app
+        shell: bash
+        run: |
+          outputs=$(az deployment group create \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --template-file infra/app.bicep \
+            --parameters \
+              location="${{ inputs.location }}" \
+              namePrefix="${{ inputs.name_prefix }}" \
+              environmentId="${{ steps.foundation.outputs.environment_id }}" \
+              registryLoginServer="${{ steps.foundation.outputs.login_server }}" \
+              pullIdentityId="${{ steps.foundation.outputs.identity_id }}" \
+              containerImage="${{ steps.foundation.outputs.login_server }}/policydesk:${{ github.sha }}" \
+            --query properties.outputs -o json)
+          echo "fqdn=$(jq -r '.fqdn.value' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+          echo "revision=$(jq -r '.revisionName.value' <<< "$outputs")" >> "$GITHUB_OUTPUT"
+      - name: Smoke test liveness
+        run: curl --fail --retry 6 --retry-all-errors "https://${{ steps.app.outputs.fqdn }}/health/live"
+      - name: Record deployment summary
+        run: |
+          echo "### Controlled demo deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Revision: \`${{ steps.app.outputs.revision }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Endpoint: \`https://${{ steps.app.outputs.fqdn }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- This workflow does not claim production uptime or customer use." >> "$GITHUB_STEP_SUMMARY"

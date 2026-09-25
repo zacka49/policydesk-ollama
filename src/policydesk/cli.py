@@ -8,7 +8,14 @@ import uvicorn
 
 from policydesk.config import load_config
 from policydesk.evaluate import run_evaluation
-from policydesk.retrieval import BM25Index, load_policy_chunks
+from policydesk.ollama import OfflineGenerationClient
+from policydesk.retrieval import (
+    BM25Index,
+    DenseIndex,
+    HybridRRFIndex,
+    OllamaEmbedder,
+    load_policy_chunks,
+)
 from policydesk.schemas import AssistRequest
 from policydesk.workflow import Assistant, load_orders
 
@@ -27,6 +34,17 @@ def main() -> None:
     evaluate = sub.add_parser("evaluate")
     evaluate.add_argument("--cases", type=Path, default=Path("evals/test_cases.jsonl"))
     evaluate.add_argument("--output", type=Path, default=Path("outputs/evaluation.json"))
+    evaluate.add_argument(
+        "--offline",
+        action="store_true",
+        help="Disable model discovery/generation for a deterministic baseline",
+    )
+    evaluate.add_argument(
+        "--retrieval",
+        choices=("bm25", "dense", "hybrid"),
+        default="bm25",
+        help="Retrieval candidate to evaluate; dense/hybrid require the configured Ollama embedding model",
+    )
     serve = sub.add_parser("serve")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)
@@ -35,6 +53,19 @@ def main() -> None:
         uvicorn.run("policydesk.api:app", host=args.host, port=args.port, reload=False)
         return
     assistant = build_assistant(Path("."))
+    if getattr(args, "retrieval", "bm25") != "bm25":
+        chunks = load_policy_chunks(Path("policies"))
+        dense = DenseIndex(
+            chunks,
+            OllamaEmbedder(assistant.config.retrieval.embedding_model),
+        )
+        assistant.index = (
+            dense
+            if args.retrieval == "dense"
+            else HybridRRFIndex(BM25Index(chunks), dense)
+        )
+    if getattr(args, "offline", False):
+        assistant.ollama = OfflineGenerationClient()  # type: ignore[assignment]
     if args.command == "demo":
         result = assistant.assist(AssistRequest(ticket=args.ticket, customer_id=args.customer, order_id=args.order))
         print(result.model_dump_json(indent=2))
@@ -44,4 +75,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

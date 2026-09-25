@@ -10,4 +10,4 @@ generation:
   max_schema_retries: 1
 retrieval:
   top_k: 4
-
+  embedding_model: "nomic-embed-text"

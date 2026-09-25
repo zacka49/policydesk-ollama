@@ -1,0 +1,23 @@
+[
+  {
+    "token": "pd-demo-alice",
+    "subject": "demo|alice",
+    "customer_id": "C-001",
+    "tenant_id": "northstar-demo",
+    "scopes": ["assist:read"]
+  },
+  {
+    "token": "pd-demo-bob",
+    "subject": "demo|bob",
+    "customer_id": "C-002",
+    "tenant_id": "northstar-demo",
+    "scopes": ["assist:read"]
+  },
+  {
+    "token": "pd-demo-no-scope",
+    "subject": "demo|auditor",
+    "customer_id": "C-003",
+    "tenant_id": "northstar-demo",
+    "scopes": []
+  }
+]

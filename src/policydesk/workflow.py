@@ -9,7 +9,7 @@ import httpx
 
 from policydesk.config import AppConfig
 from policydesk.ollama import OllamaClient, build_prompt
-from policydesk.retrieval import BM25Index
+from policydesk.retrieval import SearchIndex
 from policydesk.rules import Decision, decide, infer_intent
 from policydesk.schemas import AssistRequest, AssistResponse, Citation, DraftResponse
 
@@ -39,7 +39,7 @@ def fallback_draft(intent: str, decision: Decision, evidence: list[dict[str, str
 
 
 class Assistant:
-    def __init__(self, config: AppConfig, index: BM25Index, orders: dict[str, dict[str, object]], ollama: OllamaClient | None = None):
+    def __init__(self, config: AppConfig, index: SearchIndex, orders: dict[str, dict[str, object]], ollama: OllamaClient | None = None):
         self.config, self.index, self.orders = config, index, orders
         self.ollama = ollama or OllamaClient(config.generation)
 
@@ -56,12 +56,20 @@ class Assistant:
             try:
                 candidate = self.ollama.draft(build_prompt(request.ticket, intent, decision.decision, decision.status, decision.reason_codes, evidence))
                 valid_ids = {(row["document_id"], row["chunk_id"]) for row in evidence}
-                citations_valid = all((citation.document_id, citation.chunk_id) in valid_ids for citation in candidate.citations)
+                citations_valid = bool(candidate.citations) and all(
+                    (citation.document_id, citation.chunk_id) in valid_ids
+                    for citation in candidate.citations
+                )
                 if candidate.status == decision.status and candidate.intent == intent and citations_valid:
                     unique: dict[tuple[str, str], Citation] = {}
                     for citation in candidate.citations:
                         unique.setdefault((citation.document_id, citation.chunk_id), citation)
                     candidate.citations = list(unique.values())[: self.config.retrieval.top_k]
+                    # Consequential language remains deterministic.  The model
+                    # may choose a valid evidence subset, but it cannot turn an
+                    # eligibility-for-review decision into a refund promise (or
+                    # otherwise rewrite the trusted decision in prose).
+                    candidate.answer = draft.answer
                     draft, mode = candidate, "ollama"
             except (httpx.HTTPError, ValueError, KeyError):
                 pass

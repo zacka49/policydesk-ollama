@@ -8,6 +8,13 @@ from policydesk.config import GenerationConfig
 from policydesk.schemas import DraftResponse
 
 
+class OfflineGenerationClient:
+    """Explicit deterministic mode for reproducible evaluation and CI."""
+
+    def available(self) -> bool:
+        return False
+
+
 class OllamaClient:
     def __init__(self, config: GenerationConfig, base_url: str = "http://127.0.0.1:11434"):
         self.config, self.base_url = config, base_url.rstrip("/")
