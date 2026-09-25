@@ -2,6 +2,10 @@
 
 PolicyDesk is a local, evidence-grounded support assistant for a fictional retailer. It retrieves versioned policy text, performs an authorised read-only order lookup, computes policy decisions in trusted Python, and optionally asks Ollama to draft a schema-validated response around that immutable decision.
 
+![PolicyDesk architecture and measured evidence](docs/assets/policydesk-overview.svg)
+
+For a concise interview demonstration, follow the [three-minute walkthrough](docs/demo-walkthrough.md).
+
 | Evidence level | Current state |
 |---|---|
 | Implemented | Trusted rule decisions, BM25 retrieval, server-derived demo identity, scope/ownership checks, deterministic fallback and optional local generation |

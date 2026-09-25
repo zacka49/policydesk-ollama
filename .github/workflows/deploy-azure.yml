@@ -78,10 +78,26 @@ jobs:
           echo "revision=$(jq -r '.revisionName.value' <<< "$outputs")" >> "$GITHUB_OUTPUT"
       - name: Smoke test liveness
         run: curl --fail --retry 6 --retry-all-errors "https://${{ steps.app.outputs.fqdn }}/health/live"
+      - name: Smoke test readiness and authenticated decision path
+        shell: bash
+        run: |
+          base="https://${{ steps.app.outputs.fqdn }}"
+          curl --fail --retry 6 --retry-all-errors "$base/health/ready" | jq -e '.status == "ready"'
+          curl --fail \
+            --header 'Authorization: Bearer pd-demo-alice' \
+            --header 'Content-Type: application/json' \
+            --data '{"ticket":"I want to return this order","order_id":"NS-1001"}' \
+            "$base/assist" | jq -e '.request_id and .decision and .policy_version'
+          curl --fail \
+            --header 'Authorization: Bearer pd-demo-bob' \
+            --header 'Content-Type: application/json' \
+            --data '{"ticket":"I want to return this order","order_id":"NS-1001"}' \
+            "$base/assist" | jq -e '.decision == "unauthorised_order" and .status == "escalate"'
       - name: Record deployment summary
         run: |
           echo "### Controlled demo deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "- Commit: \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Revision: \`${{ steps.app.outputs.revision }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- Endpoint: \`https://${{ steps.app.outputs.fqdn }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Smoke checks: liveness, readiness, authorised request and cross-customer denial." >> "$GITHUB_STEP_SUMMARY"
           echo "- This workflow does not claim production uptime or customer use." >> "$GITHUB_STEP_SUMMARY"

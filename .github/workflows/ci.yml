@@ -14,4 +14,8 @@ jobs:
       - run: uv run ruff check src tests
       - run: uv run pytest -q
       - run: uv run policydesk evaluate --offline --output outputs/ci-evaluation.json
+      - name: Compile Bicep templates
+        run: |
+          az bicep build --file infra/foundation.bicep --stdout > /dev/null
+          az bicep build --file infra/app.bicep --stdout > /dev/null
       - run: docker build -t policydesk-ci .

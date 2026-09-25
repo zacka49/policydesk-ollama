@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">PolicyDesk evidence-grounded support workflow</title>
+  <desc id="desc">Architecture from authenticated request through retrieval, policy rules and a guarded response, with measured evaluation results.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#081426"/><stop offset="1" stop-color="#102b46"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="10" flood-opacity=".24"/></filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9z" fill="#70d6ff"/></marker>
+  </defs>
+  <rect width="1200" height="630" rx="28" fill="url(#bg)"/>
+  <text x="64" y="76" fill="#f7fbff" font-family="Segoe UI,Arial" font-size="42" font-weight="700">PolicyDesk</text>
+  <text x="64" y="112" fill="#a9c7df" font-family="Segoe UI,Arial" font-size="21">Evidence-grounded support with trusted decisions and explicit access boundaries</text>
+  <g filter="url(#shadow)" font-family="Segoe UI,Arial">
+    <g transform="translate(64 170)"><rect width="225" height="136" rx="18" fill="#123c5a" stroke="#3182a8"/><text x="24" y="39" fill="#70d6ff" font-size="15" font-weight="700">01 · IDENTITY</text><text x="24" y="75" fill="white" font-size="22" font-weight="600">Scoped request</text><text x="24" y="105" fill="#bfd8e8" font-size="16">Server-derived customer</text></g>
+    <g transform="translate(337 170)"><rect width="225" height="136" rx="18" fill="#123c5a" stroke="#3182a8"/><text x="24" y="39" fill="#70d6ff" font-size="15" font-weight="700">02 · EVIDENCE</text><text x="24" y="75" fill="white" font-size="22" font-weight="600">Policy retrieval</text><text x="24" y="105" fill="#bfd8e8" font-size="16">BM25 · dense · hybrid</text></g>
+    <g transform="translate(610 170)"><rect width="225" height="136" rx="18" fill="#123c5a" stroke="#3182a8"/><text x="24" y="39" fill="#70d6ff" font-size="15" font-weight="700">03 · DECISION</text><text x="24" y="75" fill="white" font-size="22" font-weight="600">Trusted rules</text><text x="24" y="105" fill="#bfd8e8" font-size="16">Python owns outcomes</text></g>
+    <g transform="translate(883 170)"><rect width="253" height="136" rx="18" fill="#154c48" stroke="#35b6a2"/><text x="24" y="39" fill="#64e5cf" font-size="15" font-weight="700">04 · RESPONSE</text><text x="24" y="75" fill="white" font-size="22" font-weight="600">Guarded draft</text><text x="24" y="105" fill="#c2e8df" font-size="16">Validate or safe fallback</text></g>
+  </g>
+  <g stroke="#70d6ff" stroke-width="4" marker-end="url(#arrow)"><path d="M289 238H327"/><path d="M562 238H600"/><path d="M835 238H873"/></g>
+  <g transform="translate(64 366)" font-family="Segoe UI,Arial">
+    <rect width="1072" height="190" rx="22" fill="#0c2035" stroke="#264e69"/>
+    <text x="30" y="42" fill="#a9c7df" font-size="17" font-weight="700">MEASURED LOCAL EVIDENCE</text>
+    <g transform="translate(30 70)"><text fill="#f7fbff" font-size="38" font-weight="700">22/22</text><text y="32" fill="#a9c7df" font-size="16">trusted decisions</text></g>
+    <g transform="translate(280 70)"><text fill="#f7fbff" font-size="38" font-weight="700">100%</text><text y="32" fill="#a9c7df" font-size="16">document recall@4</text></g>
+    <g transform="translate(550 70)"><text fill="#f7fbff" font-size="38" font-weight="700">0.808</text><text y="32" fill="#a9c7df" font-size="16">retrieval MRR@4</text></g>
+    <g transform="translate(800 70)"><text fill="#f7fbff" font-size="38" font-weight="700">250/250</text><text y="32" fill="#a9c7df" font-size="16">HTTP responses</text></g>
+    <text x="30" y="160" fill="#6f94ad" font-size="14">Synthetic portfolio workload · cloud deployment is explicitly tracked separately</text>
+  </g>
+</svg>
